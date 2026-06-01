@@ -1,0 +1,11 @@
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+python-multipart>=0.0.9
+pydantic>=2.8.0
+pydantic-settings>=2.4.0
+cryptography>=43.0.0
+playwright==1.57.0
+duckdb>=1.1.0
+pandas>=2.2.0
+openpyxl>=3.1.0
+pyarrow>=16.0.0
