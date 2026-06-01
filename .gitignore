@@ -1,0 +1,10 @@
+.env
+__pycache__/
+*.pyc
+data/
+.playwright/
+.DS_Store
+*.log
+state/
+*.sqlite
+*.db

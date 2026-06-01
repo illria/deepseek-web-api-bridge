@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>Eianun Bridge V3</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      --bg0:#eef5ff;--bg1:#f8fbff;--glass:rgba(255,255,255,.62);--glass2:rgba(255,255,255,.38);
+      --line:rgba(151,184,224,.32);--text:#13233f;--muted:#6c7c96;--blue:#2678ff;--cyan:#72c7ff;
+      --green:#18b774;--red:#f04438;--orange:#f79009;--shadow:0 24px 70px rgba(33,88,158,.14);
+      --r:24px;--sidebar:292px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;min-height:100vh;color:var(--text);font-family:Inter,Arial,"PingFang SC","Microsoft YaHei",sans-serif;background:
+      radial-gradient(circle at 15% 5%,rgba(77,160,255,.38),transparent 28%),
+      radial-gradient(circle at 95% 20%,rgba(123,208,255,.28),transparent 28%),
+      linear-gradient(180deg,var(--bg1),var(--bg0));overflow-x:hidden}
+    body:before{content:"";position:fixed;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.35),rgba(255,255,255,.05));pointer-events:none}
+    .app{display:grid;grid-template-columns:var(--sidebar) 1fr;min-height:100vh;position:relative;z-index:1}
+    .sidebar{height:100vh;position:sticky;top:0;padding:24px 18px;border-right:1px solid var(--line);background:rgba(255,255,255,.45);backdrop-filter:blur(28px) saturate(180%);box-shadow:inset -1px 0 0 rgba(255,255,255,.6)}
+    .brand{display:flex;align-items:center;gap:14px;padding:10px}
+    .brand img{width:58px;height:58px;border-radius:20px;box-shadow:0 18px 34px rgba(36,116,255,.22);animation:floaty 5s ease-in-out infinite}
+    .brand .name{font-size:25px;font-weight:900;letter-spacing:-.5px}.brand .sub{font-size:12px;color:var(--muted);margin-top:3px}
+    .nav{margin-top:20px;display:flex;flex-direction:column;gap:9px}
+    .nav a{display:flex;align-items:center;gap:12px;text-decoration:none;color:#36506f;padding:14px 16px;border-radius:18px;font-weight:800;transition:.25s cubic-bezier(.2,.8,.2,1);position:relative;overflow:hidden}
+    .nav a:hover,.nav a.active{background:rgba(255,255,255,.74);box-shadow:0 12px 30px rgba(37,108,235,.12);color:#1155bd;transform:translateY(-1px)}
+    .nav a:before{content:"";width:4px;height:0;border-radius:99px;background:linear-gradient(var(--blue),var(--cyan));position:absolute;left:0;transition:.25s}
+    .nav a.active:before{height:28px}
+    .sys{margin-top:24px;border:1px solid var(--line);background:var(--glass);backdrop-filter:blur(18px);border-radius:24px;padding:16px;box-shadow:var(--shadow)}
+    .dot{width:10px;height:10px;border-radius:50%;background:var(--green);display:inline-block;margin-right:8px;box-shadow:0 0 0 7px rgba(24,183,116,.13)}
+    .main{padding:28px 32px 50px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px}
+    h1{font-size:36px;line-height:1.08;margin:0;letter-spacing:-.8px}p{color:var(--muted);line-height:1.7}.muted{color:var(--muted)}.small{font-size:12px}
+    .glass{background:var(--glass);border:1px solid rgba(255,255,255,.68);box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.8);backdrop-filter:blur(24px) saturate(180%);border-radius:var(--r)}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:22px}.stat{padding:20px;overflow:hidden;position:relative;transition:.25s}.stat:hover{transform:translateY(-2px)}
+    .stat:after{content:"";position:absolute;right:-32px;top:-36px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(74,163,255,.26),transparent 65%)}
+    .stat .k{font-size:12px;font-weight:900;color:#657895;text-transform:uppercase;letter-spacing:.08em}.stat .v{font-size:36px;font-weight:950;margin-top:8px}.stat .s{font-size:12px;color:#89a0bc}
+    .section{margin-top:24px;animation:rise .45s ease both}.head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:13px}.head h2{font-size:27px;margin:0}.head p{margin:6px 0 0}
+    .panel{padding:22px}.two{display:grid;grid-template-columns:1.05fr .95fr;gap:18px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .field{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}.field label{font-size:13px;font-weight:900;color:#4e6686}
+    input,select,textarea{width:100%;padding:13px 15px;border:1px solid rgba(151,184,224,.42);border-radius:16px;background:rgba(255,255,255,.72);outline:none;color:var(--text);font-size:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.8);transition:.2s}
+    textarea{min-height:126px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;line-height:1.55}
+    input:focus,select:focus,textarea:focus{border-color:rgba(38,120,255,.55);box-shadow:0 0 0 5px rgba(38,120,255,.11),inset 0 1px 0 rgba(255,255,255,.8)}
+    button{border:0;border-radius:16px;padding:12px 17px;font-weight:900;color:white;cursor:pointer;transition:.2s cubic-bezier(.2,.8,.2,1);box-shadow:0 12px 22px rgba(33,88,158,.13)}
+    button:hover{transform:translateY(-1px) scale(1.01)}button:active{transform:scale(.98)}
+    .b-blue{background:linear-gradient(135deg,#2678ff,#75bdff)}.b-green{background:linear-gradient(135deg,#13b46c,#40d891)}.b-red{background:linear-gradient(135deg,#ef4444,#ff6e7a)}.b-orange{background:linear-gradient(135deg,#f79009,#ffd36e)}.b-light{background:rgba(255,255,255,.76);color:#1557bf;border:1px solid rgba(151,184,224,.42)}
+    table{width:100%;border-collapse:separate;border-spacing:0}th,td{padding:13px 11px;border-bottom:1px solid rgba(151,184,224,.24);text-align:left;vertical-align:top;font-size:13px}th{color:#617896;font-size:11px;text-transform:uppercase;letter-spacing:.08em}tbody tr:hover{background:rgba(255,255,255,.48)}
+    .scroll{overflow:auto;max-height:460px}.tag{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:900}.ok{background:rgba(24,183,116,.13);color:#08955a}.warn{background:rgba(247,144,9,.13);color:#b26400}.err{background:rgba(240,68,56,.13);color:#c8231e}.info{background:rgba(38,120,255,.13);color:#185bc5}
+    pre{background:rgba(9,22,42,.92);color:#dcedff;border-radius:22px;padding:18px;min-height:180px;overflow:auto;white-space:pre-wrap;word-break:break-word;line-height:1.55}
+    .toast{position:fixed;top:22px;right:22px;z-index:50;display:flex;flex-direction:column;gap:10px}.toast-item{background:rgba(255,255,255,.86);border:1px solid rgba(255,255,255,.8);backdrop-filter:blur(22px);box-shadow:var(--shadow);border-radius:18px;padding:14px 16px;font-weight:800;animation:toastIn .28s ease}
+    .settings-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}@keyframes toastIn{from{opacity:0;transform:translateY(-8px) scale(.96)}to{opacity:1;transform:none}}
+    @media(max-width:1280px){.stats{grid-template-columns:repeat(2,1fr)}.two,.settings-grid{grid-template-columns:1fr}}@media(max-width:960px){.app{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.main{padding:20px}.stats{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="/assets/logo.png" onerror="this.style.display='none'">
+      <div><div class="name">Eianun</div><div class="sub">Web API Bridge V21</div></div>
+    </div>
+    <nav class="nav">
+      <a class="active" href="#overview">◉ 系统概览</a><a href="#accounts">◎ 账号管理</a><a href="#workers">◌ Worker 管理</a><a href="#jobs">◈ 请求队列</a><a href="#bridge">◍ API 测试</a><a href="#settings">▣ 系统设置</a><a href="#domdebug">◬ DOM 调试</a><a href="#data">◇ 数据分析</a><a href="#logs">▤ 输出日志</a>
+    </nav>
+    <div class="sys"><div class="small muted">系统状态</div><div style="margin-top:10px;font-weight:900"><span class="dot"></span>WebSocket 实时连接</div><div class="small muted" id="wsState" style="margin-top:8px">正在连接...</div></div>
+  </aside>
+  <main class="main">
+    <div class="top" id="overview"><div><h1>多账号 DeepSeek API 中转站</h1><p>默认复用网页对话上下文，多账号、多 Worker、请求队列、自动恢复、任务分页与 OpenAI-compatible API。</p></div></div>
+    <section class="stats"><div class="glass stat"><div class="k">Accounts</div><div class="v" id="statAccounts">0</div><div class="s">已导入账号</div></div><div class="glass stat"><div class="k">Workers</div><div class="v" id="statWorkers">0</div><div class="s">运行中实例</div></div><div class="glass stat"><div class="k">Queued</div><div class="v" id="statQueued">0</div><div class="s">排队任务</div></div><div class="glass stat"><div class="k">Running</div><div class="v" id="statRunning">0</div><div class="s">运行任务</div></div></section>
+    <section class="section" id="accounts"><div class="head"><div><h2>账号管理</h2><p>导入多个 DeepSeek 登录态，设置优先级与权重。</p></div></div><div class="two"><div class="glass panel"><div class="three"><div class="field"><label>账号 ID</label><input id="accountId" placeholder="deepseek-01"></div><div class="field"><label>显示名称</label><input id="displayName" placeholder="主账号"></div><div class="field"><label>备注</label><input id="accountNotes" placeholder="可选"></div><div class="field"><label>优先级</label><input id="accountPriority" type="number" value="100"></div><div class="field"><label>权重</label><input id="accountWeight" type="number" value="100"></div><div class="field"><label>启用</label><select id="accountEnabled"><option value="true">启用</option><option value="false">停用</option></select></div></div><div class="field"><label>登录态 JSON</label><textarea id="stateInput" placeholder="粘贴扩展导出的 DeepSeek 登录态 JSON"></textarea></div><div class="row"><button class="b-blue" id="importAccountBtn">导入账号</button><button class="b-light" id="refreshAccountsBtn">刷新账号</button></div></div><div class="glass panel"><table><thead><tr><th>账号</th><th>策略</th><th>Cookies</th><th>操作</th></tr></thead><tbody id="accountsBody"></tbody></table></div></div></section>
+    <section class="section" id="workers"><div class="head"><div><h2>Worker 管理</h2><p>查看并控制每个账号对应的浏览器 Worker。</p></div></div><div class="glass panel"><div class="row"><button class="b-light" id="refreshWorkersBtn">刷新 Worker</button></div><table><thead><tr><th>账号</th><th>运行</th><th>忙碌/预约</th><th>重启</th><th>失败</th><th>最后错误</th></tr></thead><tbody id="workersBody"></tbody></table></div></section>
+    <section class="section" id="jobs"><div class="head"><div><h2>请求队列 / 任务</h2><p>异步提交任务，支持分页查看与自动重试。</p></div></div><div class="two"><div class="glass panel"><div class="field"><label>指定账号</label><select id="jobAccountSelect"></select></div><div class="field"><label>系统提示</label><textarea id="jobSystem"></textarea></div><div class="field"><label>用户消息</label><textarea id="jobMessage" placeholder="输入要发送给 DeepSeek 的请求"></textarea></div><div class="three"><div class="field"><label>重试次数</label><input id="jobRetries" type="number" value="1"></div><div class="field"><label>超时 ms</label><input id="jobTimeout" type="number" value="120000"></div><div class="field"><label>新建对话</label><select id="jobNewConversation"><option value="false">否，复用当前对话</option><option value="true">是，新建对话</option></select></div></div><div class="row"><button class="b-blue" id="createJobBtn">提交任务</button><button class="b-light" id="refreshJobsBtn">刷新任务</button></div></div><div class="glass panel"><div class="row"><button class="b-light" id="prevJobsBtn">上一页</button><span id="jobsPageText" class="muted"></span><button class="b-light" id="nextJobsBtn">下一页</button></div><div class="scroll"><table><thead><tr><th>任务</th><th>状态</th><th>账号</th><th>尝试</th><th>操作</th></tr></thead><tbody id="jobsBody"></tbody></table></div></div></div></section>
+    <section class="section" id="bridge"><div class="head"><div><h2>API 测试</h2><p>测试 /api/bridge/chat。外部 Agent 使用 /v1/chat/completions。V9 已新增 sessionId 会话隔离，并清理 Telegram 引用脚标格式。</p></div></div><div class="two"><div class="glass panel"><div class="field"><label>API Key</label><input id="apiKeyInput" placeholder="sk-local-change-me"></div><div class="field"><label>账号</label><select id="bridgeAccountSelect"></select></div><div class="field"><label>Session ID（渠道/用户隔离，可选）</label><input id="bridgeSessionId" value="web-test" placeholder="例如 telegram:chat_123 或 web-test"></div><div class="field"><label>系统提示</label><textarea id="bridgeSystem">你是一个简洁、准确的助手。</textarea></div><div class="field"><label>测试消息</label><textarea id="bridgeInput">用一句话介绍你自己。</textarea></div><button class="b-green" id="bridgeBtn">调用 Bridge API</button></div><div class="glass panel"><div class="field"><label>Base URL</label><input value="http://你的VPS_IP:8000/v1" readonly></div><div class="field"><label>Model</label><input value="deepseek-web" readonly></div><p class="muted">填入其他 Agent 的 OpenAI-compatible 配置中即可。</p></div></div></section>
+    <section class="section" id="settings"><div class="head"><div><h2>系统设置</h2><p>在线调整队列、调度、超时、重试与自动恢复参数。建议保持 newConversationPerRequest=false，这样 Agent 调用会复用网页上下文。</p></div></div><div class="glass panel"><div class="settings-grid" id="settingsGrid"></div><div class="row"><button class="b-blue" id="saveSettingsBtn">保存设置</button><button class="b-light" id="loadSettingsBtn">刷新设置</button></div></div></section>
+
+    <section class="section" id="domdebug">
+      <div class="head">
+        <div>
+          <h2>DOM 候选节点调试</h2>
+          <p>用于 DeepSeek 网页 DOM 变化时排查输入框、发送按钮、助手回复候选节点和本次提取结果。V19 新增 Tool Result Fast Finalizer，可通过 /api/debug/last-openai-request 查看 toolResultFastFinal。</p>
+        </div>
+      </div>
+      <div class="two">
+        <div class="glass panel">
+          <div class="field"><label>调试账号</label><select id="domAccountSelect"></select></div>
+          <div class="field"><label>探针 Prompt</label><textarea id="domProbePrompt">请用两句话介绍你能做什么。</textarea></div>
+          <div class="three">
+            <div class="field"><label>超时 ms</label><input id="domProbeTimeout" type="number" value="120000"></div>
+            <div class="field"><label>新建对话</label><select id="domProbeNewConversation"><option value="false">否，复用当前对话</option><option value="true">是，新建对话</option></select></div>
+            <div class="field"><label>结果展示</label><select id="domViewMode"><option value="summary">摘要</option><option value="full">完整 JSON</option></select></div>
+          </div>
+          <div class="row">
+            <button class="b-blue" id="domSnapshotBtn">抓取当前 DOM 快照</button>
+            <button class="b-green" id="domProbeBtn">发送探针并抓取前后差异</button>
+          </div>
+          <p class="muted small">注意：DOM 调试不会返回 cookies/token，但会包含页面上可见的对话文本。发给我排查时可以先删除敏感对话内容。</p>
+        </div>
+        <div class="glass panel">
+          <div class="row">
+            <span class="tag info" id="domCandidateCount">候选 0</span>
+            <span class="tag info" id="domSelectedLength">选中长度 0</span>
+          </div>
+          <div id="domTableWrap" class="scroll" style="margin-top:12px"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="data"><div class="head"><div><h2>数据分析</h2><p>上传数据并通过 DeepSeek 生成 DuckDB SQL。</p></div></div><div class="two"><div class="glass panel"><div class="field"><label>上传文件</label><input type="file" id="dataFile" accept=".csv,.tsv,.json,.parquet,.xlsx"></div><div class="row"><button class="b-blue" id="uploadBtn">上传并解析</button><button class="b-light" id="refreshDatasetsBtn">刷新数据集</button></div><div class="field"><label>数据集</label><select id="datasetSelect"></select></div><div class="field"><label>问题</label><textarea id="questionInput" placeholder="例如：这个表一共有多少行？"></textarea></div><div class="field"><label>账号</label><select id="dataAccountSelect"></select></div><button class="b-green" id="queryBtn">生成 SQL 并查询</button></div><div class="glass panel"><div id="tableWrap" class="scroll"></div></div></div></section>
+    <section class="section" id="logs"><div class="head"><div><h2>输出日志</h2></div></div><div class="glass panel"><pre id="output">等待操作...</pre></div></section>
+  </main>
+</div>
+<script>
+const $=id=>document.getElementById(id);let jobsPage=1,jobsPages=1;const output=$("output");
+function toast(msg){const box=$("toast");const el=document.createElement("div");el.className="toast-item";el.textContent=msg;box.appendChild(el);setTimeout(()=>el.remove(),3200)}
+function print(data){output.textContent=typeof data==="string"?data:JSON.stringify(data,null,2)}
+async function readJson(res){const t=await res.text();try{return JSON.parse(t)}catch{return{raw:t}}}
+function authHeaders(){const k=$("apiKeyInput").value.trim();return k?{"Authorization":"Bearer "+k}:{}}async function api(url,opt={}){opt.headers=Object.assign({},opt.headers||{});return readJson(await fetch(url,opt))}
+function tag(s){const m={succeeded:["ok","成功"],running:["info","运行"],queued:["warn","排队"],failed:["err","失败"],timeout:["err","超时"],cancelled:["warn","取消"]}[s]||["info",s||"-"];return `<span class="tag ${m[0]}">${m[1]}</span>`}function yn(v){return v?`<span class="tag ok">是</span>`:`<span class="tag warn">否</span>`}function esc(s){return String(s??"").replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[x]))}
+function renderTable(rows){const wrap=$("tableWrap");if(!rows?.length){wrap.innerHTML="<p class='muted'>无结果。</p>";return}const cols=Object.keys(rows[0]);wrap.innerHTML="<table><thead><tr>"+cols.map(c=>`<th>${esc(c)}</th>`).join("")+"</tr></thead><tbody>"+rows.map(r=>"<tr>"+cols.map(c=>`<td>${esc(typeof r[c]==='object'?JSON.stringify(r[c]):r[c])}</td>`).join("")+"</tr>").join("")+"</tbody></table>"}
+async function refreshHealth(){const d=await api("/api/health");$("statAccounts").textContent=d.accounts||0;$("statWorkers").textContent=d.workersRunning||0;$("statQueued").textContent=d.queuedJobs||0;$("statRunning").textContent=d.runningJobs||0;return d}
+async function refreshAccounts(){const d=await api("/api/accounts");const body=$("accountsBody");body.innerHTML="";const sels=[$("jobAccountSelect"),$("bridgeAccountSelect"),$("dataAccountSelect"),$("domAccountSelect")].filter(Boolean);for(const s of sels)s.innerHTML='<option value="">自动分配 / 不指定</option>';if(d.ok)for(const a of d.accounts){const tr=document.createElement("tr");tr.innerHTML=`<td><b>${esc(a.displayName)}</b><div class="small muted">${esc(a.accountId)}</div></td><td>优先 ${a.priority}<br>权重 ${a.weight}<br>${a.enabled?'<span class="tag ok">启用</span>':'<span class="tag warn">停用</span>'}</td><td>${a.cookieCount}</td><td><div class="row"><button class="b-light" onclick="checkAccount('${a.accountId}')">检查</button><button class="b-light" onclick="startWorker('${a.accountId}')">启动</button><button class="b-light" onclick="stopWorker('${a.accountId}')">停止</button><button class="b-orange" onclick="resetWorker('${a.accountId}')">重置会话</button><button class="b-orange" onclick="editAccount('${a.accountId}',${a.priority},${a.weight},${a.enabled})">策略</button><button class="b-red" onclick="deleteAccount('${a.accountId}')">删除</button></div></td>`;body.appendChild(tr);for(const s of sels){const opt=document.createElement("option");opt.value=a.accountId;opt.textContent=`${a.displayName} (${a.accountId})`;s.appendChild(opt)}}return d}
+async function refreshWorkers(){const d=await api("/api/workers/status");const body=$("workersBody");body.innerHTML="";if(d.ok)for(const w of d.workers){const tr=document.createElement("tr");tr.innerHTML=`<td>${esc(w.accountId)}</td><td>${yn(w.running)}</td><td>${w.busy?'<span class="tag info">忙碌</span>':w.reserved?'<span class="tag warn">预约</span>':'<span class="tag ok">空闲</span>'}</td><td>${w.restartCount||0}</td><td>${w.consecutiveFailures||0}</td><td>${esc(w.lastError||"-")}</td>`;body.appendChild(tr)}return d}
+async function refreshJobs(){const d=await api(`/api/jobs?page=${jobsPage}&pageSize=20`);const body=$("jobsBody");body.innerHTML="";jobsPages=d.pages||1;$("jobsPageText").textContent=`第 ${d.page||1} / ${jobsPages} 页，共 ${d.total||0} 条`;if(d.ok)for(const j of d.jobs){const tr=document.createElement("tr");tr.innerHTML=`<td><b>${esc(j.jobId.slice(0,10))}</b><div class="small muted">${esc((j.message||"").slice(0,48))}</div></td><td>${tag(j.status)}</td><td>${esc(j.accountId||"自动")}</td><td>${j.attempt}/${j.retryAttempts}</td><td><button class="b-light" onclick="showJob('${j.jobId}')">详情</button> <button class="b-light" onclick="cancelJob('${j.jobId}')">取消</button></td>`;body.appendChild(tr)}return d}
+async function refreshDatasets(){const d=await api("/api/data/datasets");const s=$("datasetSelect");s.innerHTML='<option value="">请选择数据集</option>';if(d.ok)for(const ds of d.datasets){const o=document.createElement("option");o.value=ds.datasetId;o.textContent=`${ds.originalFilename}（${ds.rowCount} 行，${ds.columns.length} 列）`;s.appendChild(o)}return d}
+function requiredAlert(fields){for(const [id,name] of fields){if(!$(id).value.trim()){alert(`请填写：${name}`);$(id).focus();return false}}return true}
+$("importAccountBtn").onclick=async()=>{try{if(!requiredAlert([["accountId","账号 ID"],["displayName","显示名称"],["stateInput","登录态 JSON"]]))return;const raw=$("stateInput").value.trim();let state;try{state=JSON.parse(raw)}catch(e){alert("登录态 JSON 格式错误，请检查后重新粘贴。");return}const payload={accountId:$("accountId").value.trim(),displayName:$("displayName").value.trim(),notes:$("accountNotes").value.trim()||null,enabled:$("accountEnabled").value==="true",priority:Number($("accountPriority").value||100),weight:Number($("accountWeight").value||100),state};print("正在导入账号...");const d=await api("/api/accounts/import",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});print(d);if(d.ok){toast("账号导入成功");["accountId","displayName","accountNotes","stateInput"].forEach(id=>$(id).value="");$("accountPriority").value=100;$("accountWeight").value=100;$("accountEnabled").value="true";await refreshAccounts();await refreshWorkers();await refreshHealth()}}catch(e){alert("导入失败："+e.message);print(String(e))}}
+async function checkAccount(id){print(await api(`/api/accounts/${id}/check`,{method:"POST"}))}async function startWorker(id){print(await api(`/api/accounts/${id}/worker/start`,{method:"POST"}));await refreshWorkers();await refreshHealth()}async function stopWorker(id){print(await api(`/api/accounts/${id}/worker/stop`,{method:"POST"}));await refreshWorkers();await refreshHealth()}async function resetWorker(id){if(confirm('确定为该账号开启一个新的 DeepSeek 对话？这会清空网页当前对话上下文。')){print(await api(`/api/accounts/${id}/worker/reset`,{method:'POST'}));await refreshWorkers();await refreshHealth();toast('已重置会话')}}async function deleteAccount(id){if(confirm("确定删除账号？")){print(await api(`/api/accounts/${id}`,{method:"DELETE"}));await refreshAccounts();await refreshWorkers();await refreshHealth()}}async function editAccount(id,p,w,en){const priority=Number(prompt("优先级，越高越优先",p));if(Number.isNaN(priority))return;const weight=Number(prompt("权重，越高越优先",w));if(Number.isNaN(weight))return;const enabled=confirm("启用该账号？点击取消则停用。");print(await api(`/api/accounts/${id}`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({priority,weight,enabled})}));await refreshAccounts()}
+$("refreshAccountsBtn").onclick=async()=>print(await refreshAccounts());$("refreshWorkersBtn").onclick=async()=>print(await refreshWorkers());$("refreshJobsBtn").onclick=async()=>print(await refreshJobs());
+$("prevJobsBtn").onclick=async()=>{jobsPage=Math.max(1,jobsPage-1);await refreshJobs()};$("nextJobsBtn").onclick=async()=>{jobsPage=Math.min(jobsPages,jobsPage+1);await refreshJobs()};
+async function showJob(id){print(await api(`/api/jobs/${id}`))}async function cancelJob(id){print(await api(`/api/jobs/${id}/cancel`,{method:"POST"}));await refreshJobs();await refreshHealth()}
+$("createJobBtn").onclick=async()=>{if(!requiredAlert([["jobMessage","用户消息"]]))return;const payload={accountId:$("jobAccountSelect").value||null,system:$("jobSystem").value.trim()||null,message:$("jobMessage").value.trim(),retryAttempts:Number($("jobRetries").value||1),timeoutMs:Number($("jobTimeout").value||120000),newConversation:$("jobNewConversation").value==="true"};print(await api("/api/jobs",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}));await refreshJobs();await refreshHealth()}
+$("bridgeBtn").onclick=async()=>{if(!requiredAlert([["bridgeInput","测试消息"]]))return;const payload={accountId:$("bridgeAccountSelect").value||null,sessionId:$("bridgeSessionId").value.trim()||null,answerFormat:"telegram_safe",system:$("bridgeSystem").value.trim()||null,message:$("bridgeInput").value.trim()};print(await api("/api/bridge/chat",{method:"POST",headers:Object.assign({"Content-Type":"application/json"},authHeaders()),body:JSON.stringify(payload)}));await refreshJobs();await refreshWorkers();await refreshHealth()}
+const settingFields=["defaultAskTimeoutMs","maxPromptChars","newConversationPerRequest","autoStartWorker","workerRecoveryRetries","jobRetryAttempts","workerHealthcheckSeconds","workerHardTimeoutMs","maxConsecutiveFailuresBeforeRestart","maxQueueSize","schedulerPreferIdle","schedulerWaitForIdleSeconds","contextAutoResetEnabled","contextFullRetryOnce","openaiPromptMode","historyWindowTurns","agentToolResultMode","agentToolResultMaxChars"];
+async function loadSettings(){const d=await api("/api/settings");const grid=$("settingsGrid");grid.innerHTML="";for(const k of settingFields){const v=d[k];const div=document.createElement("div");div.className="field";if(k==="openaiPromptMode"){div.innerHTML=`<label>${k}</label><select id="set_${k}"><option value="latest_user">latest_user 推荐：只发最新用户消息</option><option value="compact_history">compact_history 最近几轮</option><option value="full_transcript">full_transcript 旧模式不推荐</option></select>`}else if(k==="agentToolResultMode"){div.innerHTML=`<label>${k}</label><select id="set_${k}"><option value="fast_final">fast_final 推荐：工具结果直接返回</option><option value="deepseek_summary">deepseek_summary 交给 DeepSeek 总结</option></select>`}else if(typeof v==="boolean")div.innerHTML=`<label>${k}</label><select id="set_${k}"><option value="true">true</option><option value="false">false</option></select>`;else div.innerHTML=`<label>${k}</label><input id="set_${k}" type="number">`;grid.appendChild(div);$(`set_${k}`).value=String(v)}return d}
+$("loadSettingsBtn").onclick=async()=>print(await loadSettings());$("saveSettingsBtn").onclick=async()=>{const payload={};for(const k of settingFields){const el=$(`set_${k}`);if(k==="openaiPromptMode"||k==="agentToolResultMode")payload[k]=el.value;else payload[k]=el.tagName==="SELECT"?el.value==="true":Number(el.value)}print(await api("/api/settings",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}));toast("设置已保存")}
+$("uploadBtn").onclick=async()=>{const file=$("dataFile").files[0];if(!file){alert("请选择文件");return}const fd=new FormData();fd.append("file",file);const d=await readJson(await fetch("/api/data/upload",{method:"POST",body:fd}));print(d);if(d.ok){await refreshDatasets();$("datasetSelect").value=d.dataset.datasetId;renderTable(d.dataset.previewRows)}}
+$("refreshDatasetsBtn").onclick=async()=>print(await refreshDatasets());$("queryBtn").onclick=async()=>{if(!requiredAlert([["questionInput","分析问题"]]))return;if(!$("datasetSelect").value){alert("请选择数据集");return}const payload={datasetId:$("datasetSelect").value,question:$("questionInput").value.trim(),accountId:$("dataAccountSelect").value||null,limit:50};const d=await api("/api/data/query",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});print(d);if(d.ok)renderTable(d.rows)}
+function connectWs(){const proto=location.protocol==="https:"?"wss":"ws";const ws=new WebSocket(`${proto}://${location.host}/ws/events`);ws.onopen=()=>{$("wsState").textContent="已连接";};ws.onclose=()=>{$("wsState").textContent="已断开，重连中...";setTimeout(connectWs,1500)};ws.onmessage=async(ev)=>{try{const msg=JSON.parse(ev.data);if(["accounts.changed","workers.changed","jobs.changed","settings.changed","data.changed"].includes(msg.event)){await refreshHealth();if(msg.event.includes("accounts"))await refreshAccounts();if(msg.event.includes("workers"))await refreshWorkers();if(msg.event.includes("jobs"))await refreshJobs();if(msg.event.includes("settings"))await loadSettings();if(msg.event.includes("data"))await refreshDatasets()}}catch(e){}}}
+
+function renderDomCandidates(data){
+  const wrap=$("domTableWrap");
+  let candidates=[];
+  let selectedLength=0;
+  if(data?.candidates) candidates=data.candidates;
+  if(data?.newCandidates) candidates=data.newCandidates;
+  if(data?.selectedAnswerLength) selectedLength=data.selectedAnswerLength;
+  else if(data?.selected?.length) selectedLength=data.selected.length;
+  else if(data?.selectedLength) selectedLength=data.selectedLength;
+
+  $("domCandidateCount").textContent=`候选 ${candidates.length}`;
+  $("domSelectedLength").textContent=`选中长度 ${selectedLength||0}`;
+
+  if(!candidates.length){
+    wrap.innerHTML="<p class='muted'>暂无候选节点。</p>";
+    return;
+  }
+
+  wrap.innerHTML="<table><thead><tr><th>order</th><th>source</th><th>selector</th><th>length</th><th>preview</th></tr></thead><tbody>"+
+    candidates.map(c=>`<tr><td>${esc(c.order)}</td><td>${esc(c.source)}</td><td>${esc(c.selector)}</td><td>${esc(c.length)}</td><td>${esc(c.preview||"")}</td></tr>`).join("")+
+    "</tbody></table>";
+}
+
+$("domSnapshotBtn").onclick=async()=>{
+  const id=$("domAccountSelect").value;
+  if(!id){alert("请选择调试账号");return}
+  const d=await api(`/api/accounts/${id}/worker/dom-debug`);
+  print(d);
+  renderDomCandidates(d);
+};
+
+$("domProbeBtn").onclick=async()=>{
+  const id=$("domAccountSelect").value;
+  if(!id){alert("请选择调试账号");return}
+  if(!$("domProbePrompt").value.trim()){alert("请输入探针 Prompt");return}
+  const payload={
+    prompt:$("domProbePrompt").value.trim(),
+    timeoutMs:Number($("domProbeTimeout").value||120000),
+    newConversation:$("domProbeNewConversation").value==="true"
+  };
+  const d=await api(`/api/accounts/${id}/worker/dom-probe`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+  print(d);
+  renderDomCandidates(d);
+};
+
+async function init(){await refreshHealth();await refreshAccounts();await refreshWorkers();await refreshJobs();await refreshDatasets();await loadSettings();connectWs()}init()
+
+// V13 robust import handler: immediate UI feedback + backend error display.
+(function(){
+  const btn = document.getElementById("importAccountBtn");
+  if(!btn) return;
+
+  btn.onclick = async function(){
+    const get = (id) => document.getElementById(id);
+    const need = [
+      ["accountId", "账号 ID"],
+      ["displayName", "显示名称"],
+      ["stateInput", "登录态 JSON"]
+    ];
+
+    for(const [id, name] of need){
+      const node = get(id);
+      if(!node || !node.value.trim()){
+        alert(`请填写：${name}`);
+        if(node) node.focus();
+        return;
+      }
+    }
+
+    let state;
+    try{
+      state = JSON.parse(get("stateInput").value.trim());
+    }catch(e){
+      alert("登录态 JSON 格式错误，请检查是否完整复制。");
+      get("stateInput").focus();
+      return;
+    }
+
+    const payload = {
+      accountId: get("accountId").value.trim(),
+      displayName: get("displayName").value.trim(),
+      notes: get("accountNotes")?.value.trim() || null,
+      enabled: (get("accountEnabled")?.value || "true") === "true",
+      priority: Number(get("accountPriority")?.value || 100),
+      weight: Number(get("accountWeight")?.value || 100),
+      state
+    };
+
+    const oldText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "正在导入...";
+    if(typeof print === "function") print("正在导入账号，保存成功后 Worker 会在后台启动...");
+
+    try{
+      const res = await fetch("/api/accounts/import", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(payload)
+      });
+
+      const text = await res.text();
+      let data;
+      try{ data = JSON.parse(text); }catch{ data = {raw: text}; }
+
+      if(typeof print === "function") print(data);
+
+      if(!res.ok || !data.ok){
+        const detail = data.detail || data.error || data.message || data.raw || `HTTP ${res.status}`;
+        alert("导入失败：" + detail);
+        return;
+      }
+
+      if(typeof toast === "function") toast("账号导入成功，请在账号列表手动点“启动”");
+      alert("账号导入成功。现在请在账号列表里点“启动”，这样导入和启动可以分开排查。");
+
+      ["accountId","displayName","accountNotes","stateInput"].forEach(id => {
+        const node = get(id);
+        if(node) node.value = "";
+      });
+      if(get("accountPriority")) get("accountPriority").value = 100;
+      if(get("accountWeight")) get("accountWeight").value = 100;
+      if(get("accountEnabled")) get("accountEnabled").value = "true";
+
+      if(typeof refreshAccounts === "function") await refreshAccounts();
+      if(typeof refreshWorkers === "function") await refreshWorkers();
+      if(typeof refreshHealth === "function") await refreshHealth();
+
+    }catch(e){
+      alert("导入请求失败：" + e.message);
+      if(typeof print === "function") print(String(e && e.stack || e));
+    }finally{
+      btn.disabled = false;
+      btn.textContent = oldText;
+    }
+  };
+})();
+
+</script>
+</body></html>
